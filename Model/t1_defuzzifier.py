@@ -1,10 +1,27 @@
+__author__ = 'Oleh Tymchuk'
+
 import numpy as np
 import sys
 
+__all__ = ['defuzzification',]
 
-def defuzzification(x, mf, defuzz_type='cog'):
+
+def defuzzification(x, mf, defuzz_type='cog') -> float:
+    """
+    Defuzzifying the output fuzzy set.
+
+    :param x: Universe
+    :param mf: Membership Function
+    :param defuzz_type:
+     'cog' - Center of Gravity,
+     'fom' - First of Maximum,
+     'lom' - Last of Maximum,
+     'mom' - Middle of Maximum,
+    :return: crisp value
+    """
+
     method = getattr(sys.modules[__name__], f'__{defuzz_type}', None)
-    return method(x, mf) if method else method
+    return method(x, mf) if method else None
 
 
 def __cog(x, mf) -> float:
@@ -51,10 +68,3 @@ def __mom(x, mf) -> float:
 
     y = np.where(mf == mf.max())
     return (x[y[0][0]] + x[y[0][-1]]) / 2
-
-
-def jaccard_measure(x_mf, y_mf) -> float:
-    min_mf = (min(a, b) for a, b in zip(x_mf, y_mf))
-    max_mf = (max(a, b) for a, b in zip(x_mf, y_mf))
-
-    return sum(min_mf) / sum(max_mf)

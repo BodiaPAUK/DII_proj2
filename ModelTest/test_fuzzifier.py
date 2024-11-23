@@ -1,57 +1,50 @@
 import unittest
 import numpy as np
-from Model.fuzzifier import fuzzification
+from Model.t2_fuzzifier import fuzzification
 
 class TestFuzzification(unittest.TestCase):
 
-    def test_fuzzification_basic(self):
-        # Вхідні дані: crisp values та input linguistic variables (input_lvs)
-        crisp_values = [5.0]
-        input_lvs = [
+    def setUp(self):
+        # Example input for fuzzification
+        self.crisp_values = [5, 15]
+        self.input_lvs = [
             {
-                'U': np.array([0, 5, 10]),
+                'X': (0, 10, 1),  # Range: (min, max, step)
+                'U': np.linspace(0, 10, 11),  # Universe
                 'terms': {
-                    'Low': np.array([1, 0.5, 0]),
-                    'Medium': np.array([0, 0.5, 1]),
-                    'High': np.array([0, 0, 1])
-                }
-            }
-        ]
-        # Очікуваний результат
-        expected_output = {0: {'Low': 0.5, 'Medium': 0.5}}
-
-        # Перевірка результату
-        result = fuzzification(crisp_values, input_lvs)
-        self.assertEqual(result, expected_output)
-
-    def test_fuzzification_multiple_inputs(self):
-        crisp_values = [5.0, 8.0]
-        input_lvs = [
-            {
-                'U': np.array([0, 5, 10]),
-                'terms': {
-                    'Low': np.array([1, 0.5, 0]),
-                    'Medium': np.array([0, 0.5, 1]),
-                    'High': np.array([0, 0, 1])
+                    'Low': {'lmf': np.array([1, 0.8, 0.6, 0.4, 0.2, 0, 0, 0, 0, 0, 0]),
+                            'umf': np.array([1, 1, 1, 0.6, 0.4, 0.2, 0, 0, 0, 0, 0])},
+                    'High': {'lmf': np.array([0, 0, 0, 0, 0.2, 0.4, 0.6, 0.8, 1, 1, 1]),
+                             'umf': np.array([0, 0, 0, 0, 0.4, 0.6, 1, 1, 1, 1, 1])}
                 }
             },
             {
-                'U': np.array([0, 5, 10]),
+                'X': (10, 20, 1),  # Range: (min, max, step)
+                'U': np.linspace(10, 20, 11),  # Universe
                 'terms': {
-                    'Cold': np.array([1, 0.5, 0]),
-                    'Warm': np.array([0, 0.5, 1]),
-                    'Hot': np.array([0, 0, 1])
+                    'Medium': {'lmf': np.array([0, 0.2, 0.4, 0.6, 0.8, 1, 1, 0.8, 0.6, 0.4, 0.2]),
+                               'umf': np.array([0, 0.4, 0.6, 1, 1, 1, 1, 1, 0.6, 0.4, 0])}
                 }
             }
         ]
-        expected_output = {
-            0: {'Low': 0.5, 'Medium': 0.5},
-            1: {'Warm': 1, 'Hot': 1.0}
+
+    def test_fuzzification(self):
+        # Run fuzzification
+        result = fuzzification(self.crisp_values, self.input_lvs)
+
+        # Expected results
+        expected_result = {
+            0: {'Low': (0.0, 0.2), 'High': (0.4, 0.6)},
+            1: {}
         }
 
-        result = fuzzification(crisp_values, input_lvs)
-        self.assertEqual(result, expected_output)
+        self.assertEqual(result, expected_result)
 
+    def test_empty_terms(self):
+        # Test with no terms in input
+        empty_lvs = [{'X': (0, 10, 1), 'U': np.linspace(0, 10, 11), 'terms': {}}]
+        result = fuzzification([5], empty_lvs)
+        self.assertEqual(result, {0: {}})  # Expect empty result for no terms
 
 if __name__ == '__main__':
     unittest.main()

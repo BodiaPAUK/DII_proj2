@@ -1,22 +1,21 @@
 import Model.model as model
-import Model.inference_mamdani as inference_mamdani
-import Model.fuzzy_operators as fuzzy_operators
+import Model.t2_mandani_inference as t2_mandani_inference
+import Model.t2_plot as t2_plot
 from flask import Flask, jsonify, abort, request, render_template
 import dataBase.db_access as db_access
 
 app = Flask(__name__)
 
-inference_mamdani.preprocessing(model.input_lvs, model.output_lv)
+t2_mandani_inference.preprocessing(model.input_lvs, model.output_lv)
 
 '''crisp = [23, 55, 45]
+result = t2_mandani_inference.process(model.input_lvs, model.output_lv, model.rule_base, crisp)
+print(result)'''
 
-inference_mamdani.preprocessing(model.input_lvs, model.output_lv)
-result = inference_mamdani.process(model.input_lvs, model.output_lv, model.rule_base, crisp)
-print(result)
-
+'''
 for lv in model.input_lvs:
-    fuzzy_operators.draw_lv(lv)
-fuzzy_operators.draw_lv(model.output_lv)'''
+    t2_plot.draw_lv(lv)
+t2_plot.draw_lv(model.output_lv)'''
 
 @app.route('/api/calculate-skill-level/<java_skill>/<english_skill>/<soft_skill>', methods=['GET'])
 def calculate_skill_level(java_skill, english_skill, soft_skill):
@@ -36,7 +35,7 @@ def calculate_skill_level(java_skill, english_skill, soft_skill):
         return jsonify({"error": "soft_skill is out of the range [0;50]"}), 400
 
     crisp = [java_skill, english_skill, soft_skill]
-    result = inference_mamdani.process(model.input_lvs, model.output_lv, model.rule_base, crisp)
+    result = t2_mandani_inference.process(model.input_lvs, model.output_lv, model.rule_base, crisp)
     return jsonify(result), 200
 
 
